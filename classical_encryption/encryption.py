@@ -2,6 +2,7 @@ import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 import os
 import sys
+import time 
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -21,6 +22,7 @@ with open(input_file_path, "rb") as f:
 cipher = Cipher(algorithms.AES(aes_key), modes.CTR(iv))
 encryptor = cipher.encryptor()
 encrypted_data = encryptor.update(plaintext) + encryptor.finalize()
+start_time = time.perf_counter()
 encrypted_aes_key = public_key.encrypt(
     aes_key,
     padding.OAEP(
@@ -29,12 +31,17 @@ encrypted_aes_key = public_key.encrypt(
         label=None
     )
 )
+end_time = time.perf_counter()
 output_name = input_file_path + ".encrypted"
 with open(output_name, "wb") as f:
     f.write(iv)                # 16 bytes
     f.write(encrypted_aes_key) # 256 bytes (for RSA 2048)
     f.write(encrypted_data)    # Remainder of the file
+duration = (end_time - start_time) * 1000
 print(f"Encryption complete. file saved as '{output_name}'")
+print("-" * 35)
+print(f"Encryption Process Time: {duration:.4f} ms")
+print("-" * 35)
 
 
 

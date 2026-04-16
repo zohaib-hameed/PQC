@@ -1,4 +1,5 @@
 import os, sys
+import time 
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -17,7 +18,8 @@ with open(KEY_PATH, "rb") as key_file:
 with open(ENC_PATH, "rb") as f:
     iv = f.read(16)                   
     encrypted_aes_key = f.read(256)    
-    encrypted_data = f.read()          
+    encrypted_data = f.read() 
+start_time = time.perf_counter()
 aes_key = private_key.decrypt(
     encrypted_aes_key,
     padding.OAEP(
@@ -26,9 +28,14 @@ aes_key = private_key.decrypt(
         label=None
     )
 )
+end_time = time.perf_counter()
+rsa_duration = (end_time - start_time) * 1000
 cipher = Cipher(algorithms.AES(aes_key), modes.CTR(iv))
 decryptor = cipher.decryptor()
 plaintext = decryptor.update(encrypted_data) + decryptor.finalize()
 with open(OUTPUT_FILE, "wb") as f:
     f.write(plaintext)
 print("Decryption successful! File saved as 'document_decrypted.txt'")
+print("-" * 35)
+print(f"CLASSICAL RSA DECRYPTION TIME: {rsa_duration:.4f} ms")
+print("-" * 35)
